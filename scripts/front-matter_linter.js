@@ -18,6 +18,29 @@ import {
 } from "./front-matter_utils.js";
 
 async function resolveDirectory(file) {
+  try{
+    const stats = await fs.lstat(file);
+  if (stats.isDirectory()) {
+    const api = new fdir()
+      .withErrors()
+      .withFullPaths()
+      .filter((filePath) => filePath.endsWith("index.md"))
+      .crawl(file);
+    return api.withPromise();
+  } else if (
+    stats.isFile() &&
+    file.endsWith("index.md") &&
+    !file.includes("tests/front-matter_test_files")
+  ) {
+    return [file];
+  } else {
+    return [];
+  }
+}catch(error){
+    console.error(`Error processing ${file}:`,error);
+    return [];
+  }   
+  }
   const stats = await fs.lstat(file);
   if (stats.isDirectory()) {
     const api = new fdir()
